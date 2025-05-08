@@ -80,7 +80,6 @@ public class FnTechTestClient : IFnTechTestClient
       var response = await _httpClient.GetAsync(url);
       response.EnsureSuccessStatusCode();
 
-      // Check if content is empty
       var content = await response.Content.ReadAsStringAsync();
       if (string.IsNullOrWhiteSpace(content))
       {
