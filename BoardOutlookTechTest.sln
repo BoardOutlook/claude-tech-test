@@ -2,7 +2,7 @@
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "claude-tech-test", "claude-tech-test\claude-tech-test.csproj", "{9498CF9D-802B-6C3D-FD7B-768447039229}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "claude-tech-test", "api\claude-tech-test.csproj", "{9498CF9D-802B-6C3D-FD7B-768447039229}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{85881DC9-DAC9-469D-9422-B763953E85A9}"
 EndProject
