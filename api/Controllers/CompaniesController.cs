@@ -18,9 +18,9 @@ public class CompaniesController : ControllerBase
 
     [HttpGet("executives/compensation")]
     [ProducesResponseType<IEnumerable<CompensationDto>>(StatusCodes.Status200OK)]
-    public IActionResult GetExecutivesWithCompensationAboveAverage()
+    public async Task<IActionResult> GetExecutivesWithCompensationAboveAverage()
     {
-        var executives = _companyService.GetExecutivesWithCompensationAboveAverage();
+        var executives = await _companyService.GetExecutivesWithCompensationAboveAverage();
         return Ok(executives);
     }
 }
