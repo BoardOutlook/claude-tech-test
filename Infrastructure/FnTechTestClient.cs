@@ -5,6 +5,7 @@ using Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Infrastructure;
 
@@ -73,14 +74,29 @@ public class FnTechTestClient : IFnTechTestClient
   {
     try
     {
-      var encodedIndustry = HttpUtility.UrlEncode(industryTitle);
-      var url = $"{_apiSettings.BaseUrl}/industries/{encodedIndustry}/benchmark?code={_apiSettings.ApiKey}";
+      var url = $"{_apiSettings.BaseUrl}/industries/{industryTitle}/benchmark?code={_apiSettings.ApiKey}";
       _logger.LogInformation("Fetching average compensation for industry {Industry}", industryTitle);
 
       var response = await _httpClient.GetAsync(url);
       response.EnsureSuccessStatusCode();
 
-      return await response.Content.ReadFromJsonAsync<GetAverageCompensationDto>() ?? new GetAverageCompensationDto();
+      // Check if content is empty
+      var content = await response.Content.ReadAsStringAsync();
+      if (string.IsNullOrWhiteSpace(content))
+      {
+        _logger.LogWarning("Empty response received for industry {Industry}", industryTitle);
+        return null;
+      }
+
+      try
+      {
+        return await response.Content.ReadFromJsonAsync<GetAverageCompensationDto>() ?? null;
+      }
+      catch (JsonException jsonEx)
+      {
+        _logger.LogError(jsonEx, "Invalid JSON response for industry {Industry}: {Content}", industryTitle, content);
+        return null;
+      }
     }
     catch (HttpRequestException ex)
     {
