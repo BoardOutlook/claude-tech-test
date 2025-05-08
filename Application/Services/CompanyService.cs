@@ -19,14 +19,28 @@ public class CompanyService(IFnTechTestClient fnTechTestClient, ILogger<CompanyS
       var executives = executivesLists.SelectMany(list => list).ToList();
 
       var industries = executives.Select(e => e.IndustryTitle).Distinct().ToList();
-      var compensationTasks = industries.Select(industry =>
-          fnTechTestClient.GetAverageCompensationAsync(industry));
-      var compensationResults = await Task.WhenAll(compensationTasks);
 
-      var industryAverages = compensationResults
-          .ToDictionary(r => r.IndustryTitle, r => r.AverageCompensation);
+      var industryAverages = new Dictionary<string, decimal>();
+      int count = 0;
+      foreach (var industry in industries)
+      {
+        var averageCompensation = await fnTechTestClient.GetAverageCompensationAsync(industry);
+        if (averageCompensation != null)
+        {
+          industryAverages[averageCompensation.IndustryTitle] = averageCompensation.AverageCompensation;
+        }
+
+        if (count == 30)
+        {
+          await Task.Delay(200);
+          count = 0;
+        }
+
+        count++;
+      }
 
       return executives
+          .Where(r => industryAverages.ContainsKey(r.IndustryTitle))
           .Where(exec => exec.Salary > industryAverages[exec.IndustryTitle])
           .Select(exec => new CompensationDto
           {

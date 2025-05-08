@@ -38,6 +38,11 @@ public class FnTechTestClient : IFnTechTestClient
       _logger.LogError(ex, "Error fetching companies: {Message}", ex.Message);
       return [];
     }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error fetching companies: {Message}", ex.Message);
+      return [];
+    }
   }
 
   public async Task<List<GetAllExecutivesDto>> GetAllExecutivesAsync(string companySymbol)
@@ -57,10 +62,14 @@ public class FnTechTestClient : IFnTechTestClient
     {
       _logger.LogError(ex, "Error fetching executives for company {Symbol}: {Message}", companySymbol, ex.Message);
       return [];
+    } catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error fetching executives for company {Symbol}: {Message}", companySymbol, ex.Message);
+      return [];
     }
   }
 
-  public async Task<GetAverageCompensationDto> GetAverageCompensationAsync(string industryTitle)
+  public async Task<GetAverageCompensationDto?> GetAverageCompensationAsync(string industryTitle)
   {
     try
     {
@@ -76,7 +85,12 @@ public class FnTechTestClient : IFnTechTestClient
     catch (HttpRequestException ex)
     {
       _logger.LogError(ex, "Error fetching average compensation for industry {Industry}: {Message}", industryTitle, ex.Message);
-      return new GetAverageCompensationDto();
+      return null;
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error fetching average compensation for industry {Industry}: {Message}", industryTitle, ex.Message);
+      return null;
     }
   }
 }

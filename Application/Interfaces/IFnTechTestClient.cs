@@ -7,5 +7,5 @@ public interface IFnTechTestClient
 {
   Task<List<GetAllCompaniesResponse>> GetAllCompaniesAsync();
   Task<List<GetAllExecutivesDto>> GetAllExecutivesAsync(string companySymbol);
-  Task<GetAverageCompensationDto> GetAverageCompensationAsync(string industryTitle);
+  Task<GetAverageCompensationDto?> GetAverageCompensationAsync(string industryTitle);
 }
