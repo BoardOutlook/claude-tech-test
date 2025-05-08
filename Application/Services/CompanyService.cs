@@ -8,14 +8,14 @@ public class CompanyService(IFnTechTestClient fnTechTestClient) : ICompanyServic
 {
   public async Task<IEnumerable<CompensationDto>> GetExecutivesWithCompensationAboveAverage()
   {
-    var companies = await fnTechTestClient.GetAllCompanies();
+    var companies = await fnTechTestClient.GetAllCompaniesAsync();
     var companySymbolSet = new HashSet<string>();
     companies.ForEach(company => companySymbolSet.Add(company.Symbol));
 
     var executives = new List<GetAllExecutivesDto>();
     foreach (var companySymbol in companySymbolSet)
     {
-      var companyExecutives = await fnTechTestClient.GetAllExecutives(companySymbol);
+      var companyExecutives = await fnTechTestClient.GetAllExecutivesAsync(companySymbol);
       executives.AddRange(companyExecutives);
     }
 
@@ -25,7 +25,7 @@ public class CompanyService(IFnTechTestClient fnTechTestClient) : ICompanyServic
     var industryAverageCompensation = new Dictionary<string, decimal>();
     foreach (var industry in industrySet)
     {
-      var averageCompensation = await fnTechTestClient.GetAverageCompensation(industry);
+      var averageCompensation = await fnTechTestClient.GetAverageCompensationAsync(industry);
       industryAverageCompensation.Add(industry, averageCompensation.AverageCompensation);
     }
 

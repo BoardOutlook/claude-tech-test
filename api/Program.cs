@@ -1,4 +1,5 @@
 using Application;
+using Application.Common;
 using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication()
     .AddAInfrastructure();
+
+builder.Services.Configure<ApiSettings>(
+            builder.Configuration.GetSection("ApiSettings"));
 
 builder.Services.AddControllers()
             .AddNewtonsoftJson();
