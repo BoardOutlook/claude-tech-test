@@ -1,50 +1,45 @@
 using System;
 using Application.Dtos;
 using Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services;
 
-public class CompanyService(IFnTechTestClient fnTechTestClient) : ICompanyService
+public class CompanyService(IFnTechTestClient fnTechTestClient, ILogger<CompanyService> logger) : ICompanyService
 {
   public async Task<IEnumerable<CompensationDto>> GetExecutivesWithCompensationAboveAverage()
   {
-    var companies = await fnTechTestClient.GetAllCompaniesAsync();
-    var companySymbolSet = new HashSet<string>();
-    companies.ForEach(company => companySymbolSet.Add(company.Symbol));
-
-    var executives = new List<GetAllExecutivesDto>();
-    foreach (var companySymbol in companySymbolSet)
+    try
     {
-      var companyExecutives = await fnTechTestClient.GetAllExecutivesAsync(companySymbol);
-      executives.AddRange(companyExecutives);
+      var companies = await fnTechTestClient.GetAllCompaniesAsync();
+      var companySymbols = companies.Select(c => c.Symbol).Distinct().ToList();
+
+      var executivesTasks = companySymbols.Select(symbol => fnTechTestClient.GetAllExecutivesAsync(symbol));
+      var executivesLists = await Task.WhenAll(executivesTasks);
+      var executives = executivesLists.SelectMany(list => list).ToList();
+
+      var industries = executives.Select(e => e.IndustryTitle).Distinct().ToList();
+      var compensationTasks = industries.Select(industry =>
+          fnTechTestClient.GetAverageCompensationAsync(industry));
+      var compensationResults = await Task.WhenAll(compensationTasks);
+
+      var industryAverages = compensationResults
+          .ToDictionary(r => r.IndustryTitle, r => r.AverageCompensation);
+
+      return executives
+          .Where(exec => exec.Salary > industryAverages[exec.IndustryTitle])
+          .Select(exec => new CompensationDto
+          {
+            NameAndPosition = exec.NameAndPosition,
+            Compensation = exec.Salary,
+            AverageIndustryCompensation = industryAverages[exec.IndustryTitle]
+          })
+          .ToList();
     }
-
-    var industrySet = new HashSet<string>();
-    executives.ForEach(exec => industrySet.Add(exec.IndustryTitle));
-
-    var industryAverageCompensation = new Dictionary<string, decimal>();
-    foreach (var industry in industrySet)
+    catch (Exception ex)
     {
-      var averageCompensation = await fnTechTestClient.GetAverageCompensationAsync(industry);
-      industryAverageCompensation.Add(industry, averageCompensation.AverageCompensation);
+      logger.LogError(ex, "Error fetching executives with compensation above average: {Message}", ex.Message);
+      throw;
     }
-
-    var executivesWithCompensationAboveAverage = new List<CompensationDto>();
-    foreach (var exec in executives)
-    {
-      var averageCompensation = industryAverageCompensation[exec.IndustryTitle];
-      var tenPercentAboveAverage = averageCompensation * 1.1m;
-      if (exec.Salary > averageCompensation)
-      {
-        executivesWithCompensationAboveAverage.Add(new CompensationDto
-        {
-          NameAndPosition = exec.NameAndPosition,
-          Compensation = exec.Salary,
-          AverageIndustryCompensation = averageCompensation
-        });
-      }
-    }
-
-    return executivesWithCompensationAboveAverage;
   }
 }

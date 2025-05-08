@@ -1,5 +1,6 @@
 using Application;
 using Application.Common;
+using claude_tech_test;
 using Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication()
     .AddAInfrastructure();
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.Configure<ApiSettings>(
             builder.Configuration.GetSection("ApiSettings"));
@@ -24,9 +27,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.MapControllers();
 
 
 app.Run();
-
